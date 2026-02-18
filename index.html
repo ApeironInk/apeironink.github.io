@@ -8,7 +8,7 @@
     <title>Nexus</title>
     <meta name="description" content="Nexus">
     
-    <!-- Protocolo Open Graph -->
+    <!-- Protocolo Open Graph (Previsualización en redes sociales) -->
     <meta property="og:title" content="Nexus">
     <meta property="og:description" content="Nexus">
     <meta property="og:type" content="website">
@@ -35,8 +35,11 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             display: flex;
-            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
         }
 
         .mono { font-family: 'JetBrains Mono', monospace; }
@@ -65,7 +68,6 @@
             transition: all 0.2s ease, filter 0s;
             cursor: pointer;
             width: 100%; 
-            /* Aberración cromática base en tarjetas */
             filter: 
                 drop-shadow(0.5px 0px 0px rgba(0, 233, 255, 0.5)) 
                 drop-shadow(-0.5px 0px 0px rgba(255, 0, 255, 0.5));
@@ -76,7 +78,6 @@
             color: var(--accent-text);
             border-color: var(--accent-color);
             transform: translateY(-3px);
-            /* Combinación de aberración + sombra interactiva */
             filter: 
                 drop-shadow(0.5px 0px 0px rgba(0, 233, 255, 0.5)) 
                 drop-shadow(-0.5px 0px 0px rgba(255, 0, 255, 0.5))
@@ -124,8 +125,9 @@
         <div class="mono text-[10px] tracking-[0.5em] animate-pulse">SINCRONIZANDO...</div>
     </div>
 
-    <main class="flex-grow flex flex-col items-center justify-center p-6">
-        <div class="w-fit mx-auto text-center flex flex-col items-stretch">
+    <!-- Contenedor central absoluto -->
+    <main class="w-full max-w-md p-6 flex flex-col items-center">
+        <div class="w-fit text-center flex flex-col items-stretch">
             
             <!-- Identidad Visual -->
             <a id="identity-link" 
@@ -166,14 +168,15 @@
                 </a>
             </div>
 
+            <!-- Footer con ajuste de tamaño y tono -->
+            <footer class="mt-40 text-center">
+                <p class="mono text-[12px] text-neutral-500 uppercase tracking-[0.3em]">
+                    citas por instagram o whatsapp
+                </p>
+            </footer>
+
         </div>
     </main>
-
-    <footer class="p-12 text-center">
-        <p class="mono text-[10px] text-neutral-600 uppercase tracking-[0.3em]">
-            citas por instagram o whatsapp
-        </p>
-    </footer>
 
     <script>
         function randomizeShadow(el) {
