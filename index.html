@@ -8,6 +8,9 @@
     <title>Nexus | Apeiron.INK</title>
     <meta name="title" content="Nexus | Apeiron.INK">
     <meta name="description" content="Nexus | Apeiron.INK">
+    
+    <!-- Icono de la pestaña (Favicon) -->
+    <link rel="icon" type="image/png" href="image.png">
 
     <!-- Protocolo Open Graph (Previsualización en redes sociales) -->
     <meta property="og:type" content="website">
@@ -189,18 +192,12 @@
     </main>
 
     <script>
-        /**
-         * Genera sombras de interacción aleatorias basadas en el esquema CMY
-         */
         function randomizeShadow(el) {
             const colors = ['#00E9FF', '#FF00FF', '#FFD300'];
             const chosen = colors[Math.floor(Math.random() * colors.length)];
             el.style.setProperty('--interactive-shadow', chosen);
         }
 
-        /**
-         * Ejecuta la retirada del bloqueo visual inicial
-         */
         const removeLoading = () => {
             const loader = document.getElementById('loading');
             if (loader) {
@@ -209,7 +206,6 @@
             }
         };
 
-        // Inicialización de protocolos visuales
         lucide.createIcons();
         setTimeout(removeLoading, 500);
     </script>
