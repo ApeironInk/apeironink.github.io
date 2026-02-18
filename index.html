@@ -5,15 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <!-- Metadatos de Navegador y SEO -->
-    <title></title>
+    <title>Nexus | Apeiron.INK</title>
+    <meta name="title" content="Nexus | Apeiron.INK">
     <meta name="description" content="Nexus | Apeiron.INK">
-    
+
     <!-- Protocolo Open Graph (Previsualización en redes sociales) -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://apeironink.es/">
     <meta property="og:title" content="Nexus | Apeiron.INK">
     <meta property="og:description" content="Nexus | Apeiron.INK">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://apeironink.github.io">
-    
+    <meta property="og:image" content="">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://apeironink.es/">
+    <meta property="twitter:title" content="Nexus | Apeiron.INK">
+    <meta property="twitter:description" content="Nexus | Apeiron.INK">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -44,6 +52,7 @@
 
         .mono { font-family: 'JetBrains Mono', monospace; }
 
+        /* Aberración cromática 0.5px / Opacidad 0.5 */
         #display-name {
             color: var(--name-color);
             transition: opacity 0.3s ease;
@@ -121,11 +130,12 @@
 </head>
 <body class="grid-bg">
 
+    <!-- Bloque de carga (500ms) -->
     <div id="loading" class="loading-overlay">
         <div class="mono text-[10px] tracking-[0.5em] animate-pulse">SINCRONIZANDO...</div>
     </div>
 
-    <!-- Contenedor central absoluto -->
+    <!-- Arquitectura de Contenido Central -->
     <main class="w-full max-w-md p-6 flex flex-col items-center">
         <div class="w-fit text-center flex flex-col items-stretch">
             
@@ -143,7 +153,7 @@
                 <p id="display-id" class="mono text-[10px] tracking-[0.3em] text-neutral-500 uppercase border-y border-neutral-900 py-2 px-4">BLACKWORK ILUSTRATIVO</p>
             </a>
 
-            <!-- Botonera de Enlaces -->
+            <!-- Módulo de Enlaces -->
             <div id="links-container" class="space-y-3 flex flex-col items-stretch">
                 <a href="https://www.instagram.com/apeiron.ink/" 
                    target="_blank" 
@@ -168,7 +178,7 @@
                 </a>
             </div>
 
-            <!-- Footer con ajuste de tamaño y tono -->
+            <!-- Información de Servicio -->
             <footer class="mt-40 text-center">
                 <p class="mono text-[12px] text-neutral-500 uppercase tracking-[0.3em]">
                     citas por instagram o whatsapp
@@ -179,12 +189,18 @@
     </main>
 
     <script>
+        /**
+         * Genera sombras de interacción aleatorias basadas en el esquema CMY
+         */
         function randomizeShadow(el) {
             const colors = ['#00E9FF', '#FF00FF', '#FFD300'];
             const chosen = colors[Math.floor(Math.random() * colors.length)];
             el.style.setProperty('--interactive-shadow', chosen);
         }
 
+        /**
+         * Ejecuta la retirada del bloqueo visual inicial
+         */
         const removeLoading = () => {
             const loader = document.getElementById('loading');
             if (loader) {
@@ -193,6 +209,7 @@
             }
         };
 
+        // Inicialización de protocolos visuales
         lucide.createIcons();
         setTimeout(removeLoading, 500);
     </script>
