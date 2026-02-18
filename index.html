@@ -12,7 +12,7 @@
         :root {
             --bg-color: #050505;
             --text-color: #ffffff;
-            --border-color: #222222;
+            --border-color: rgba(255, 211, 0, 0.35);
             --accent-color: #ffffff;
             --accent-text: #000000;
             --name-color: #F5F5F5;
@@ -50,6 +50,7 @@
             color: var(--text-color);
             transition: all 0.2s ease, filter 0s;
             cursor: pointer;
+            width: 100%; /* Ocupa todo el ancho del contenedor w-fit */
         }
 
         .link-card:hover {
@@ -74,19 +75,6 @@
             background-image: linear-gradient(var(--grid-color) 1px, transparent 1px), 
                               linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
             background-size: 40px 40px;
-        }
-
-        input[type="color"] {
-            -webkit-appearance: none;
-            border: none;
-            width: 24px;
-            height: 24px;
-            cursor: pointer;
-            background: none;
-        }
-        input[type="color"]::-webkit-color-swatch {
-            border: 1px solid #444;
-            border-radius: 2px;
         }
 
         #config-panel::-webkit-scrollbar { width: 4px; }
@@ -114,7 +102,7 @@
     <!-- Panel de Gestión -->
     <div id="config-panel" class="fixed left-4 top-4 z-50 bg-neutral-900 border border-neutral-700 p-4 rounded-lg w-80 shadow-2xl transition-transform -translate-x-[22rem] hover:translate-x-0 overflow-y-auto max-h-[90vh]">
         <div class="flex justify-between items-center mb-6 border-b border-neutral-800 pb-2">
-            <h3 class="text-[10px] font-bold uppercase mono text-neutral-400 tracking-tighter">Módulo de Control Cloud V.3.4</h3>
+            <h3 class="text-[10px] font-bold uppercase mono text-neutral-400 tracking-tighter">Módulo de Control V.3.5 (Prod)</h3>
             <span class="text-[9px] bg-neutral-800 px-1 text-neutral-500">Alt + C</span>
         </div>
         
@@ -132,7 +120,7 @@
                     </div>
                     <div class="flex items-center justify-between bg-black/40 p-1.5 rounded border border-neutral-800">
                         <label class="text-[9px] uppercase mono">Borde</label>
-                        <input type="color" id="clr-border" value="#222222" oninput="updateUI()">
+                        <input type="color" id="clr-border" value="#FFD300" oninput="updateUI()">
                     </div>
                     <div class="flex items-center justify-between bg-black/40 p-1.5 rounded border border-neutral-800">
                         <label class="text-[9px] uppercase mono">Acento</label>
@@ -159,14 +147,15 @@
                 <div id="links-editor" class="space-y-3"></div>
             </div>
             
-            <button id="save-btn" onclick="saveData()" class="w-full bg-white text-black font-bold text-[10px] py-3 uppercase hover:bg-neutral-300 transition-colors mono tracking-widest">Guardar en la Nube</button>
+            <button id="save-btn" onclick="saveData()" class="w-full bg-white text-black font-bold text-[10px] py-3 uppercase hover:bg-neutral-300 transition-colors mono tracking-widest">Guardar Cambios</button>
             <div id="status-msg" class="text-[8px] mono text-center uppercase text-neutral-500 h-4"></div>
         </div>
     </div>
 
     <!-- Interfaz Principal -->
-    <main class="flex-grow flex items-center justify-center p-6">
-        <div class="w-full max-w-md text-center">
+    <main class="flex-grow flex flex-col items-center justify-center p-6">
+        <!-- Contenedor con ancho ajustado al ID -->
+        <div class="w-fit mx-auto text-center flex flex-col items-stretch">
             
             <a id="identity-link" 
                onmouseenter="randomizeShadow(this)" 
@@ -178,10 +167,11 @@
                     <i data-lucide="binary" class="text-black w-8 h-8" id="avatar-icon"></i>
                 </div>
                 <h1 id="display-name" class="text-3xl font-bold tracking-tighter uppercase mb-2">APEIRON.INK</h1>
-                <p id="display-id" class="mono text-[10px] tracking-[0.3em] text-neutral-500 uppercase border-y border-neutral-900 py-2 inline-block px-4">BLACKWORK ILUSTRATIVO</p>
+                <p id="display-id" class="mono text-[10px] tracking-[0.3em] text-neutral-500 uppercase border-y border-neutral-900 py-2 px-4">BLACKWORK ILUSTRATIVO</p>
             </a>
 
-            <div id="links-container" class="space-y-3"></div>
+            <!-- El contenedor de enlaces ahora se expande al ancho del ID -->
+            <div id="links-container" class="space-y-3 flex flex-col items-stretch"></div>
 
         </div>
     </main>
@@ -197,25 +187,35 @@
         import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        // --- GESTIÓN DE ENTORNO ---
+        const isCanvasEnv = typeof __firebase_config !== 'undefined';
+        let db = null;
+        let auth = null;
+        let appId = 'nexus-standalone';
+
+        if (isCanvasEnv) {
+            try {
+                const firebaseConfig = JSON.parse(__firebase_config);
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+            } catch (e) {
+                console.warn("Nexus: Error en inicialización de Firebase.");
+            }
+        }
 
         let appState = {
             name: "APEIRON.INK",
             idTag: "BLACKWORK ILUSTRATIVO",
             mainLink: "https://www.instagram.com/apeiron.ink/",
-            colors: { bg: "#050505", text: "#ffffff", border: "#222222", accent: "#ffffff" },
+            colors: { bg: "#050505", text: "#ffffff", border: "rgba(255, 211, 0, 0.35)", accent: "#ffffff" },
             links: [
                 { title: "Instagram (portfolio)", url: "https://www.instagram.com/apeiron.ink/" },
                 { title: "Whatsapp", url: "https://wa.me/message/4SLJ2CDOJ5RND1" },
                 { title: "TikTok", url: "https://www.tiktok.com/@apeiron.ink?_r=1&_t=ZN-9420kon7vs6" }
             ]
         };
-
-        const getConfigDocRef = () => doc(db, 'artifacts', appId, 'public', 'data', 'config', 'settings');
 
         const removeLoading = () => {
             const loader = document.getElementById('loading');
@@ -225,8 +225,6 @@
             }
         };
 
-        // Función global para aleatorizar el color de la sombra
-        // Añadido #FFD300 al espectro de aleatoriedad
         window.randomizeShadow = (el) => {
             const colors = ['#00E9FF', '#FF00FF', '#FFD300'];
             const chosen = colors[Math.floor(Math.random() * colors.length)];
@@ -242,7 +240,16 @@
 
             root.style.setProperty('--bg-color', bgVal);
             root.style.setProperty('--text-color', textVal);
-            root.style.setProperty('--border-color', borderVal);
+            
+            if (borderVal.startsWith('#')) {
+                const r = parseInt(borderVal.slice(1, 3), 16);
+                const g = parseInt(borderVal.slice(3, 5), 16);
+                const b = parseInt(borderVal.slice(5, 7), 16);
+                root.style.setProperty('--border-color', `rgba(${r}, ${g}, ${b}, 0.35)`);
+            } else {
+                root.style.setProperty('--border-color', borderVal);
+            }
+            
             root.style.setProperty('--accent-color', accentVal);
             root.style.setProperty('--accent-text', bgVal);
 
@@ -265,7 +272,6 @@
                     url: urlInputs[i].value
                 }));
             }
-
             renderLinks();
         };
 
@@ -277,7 +283,7 @@
                    target="_blank" 
                    onmouseenter="randomizeShadow(this)"
                    onpointerdown="randomizeShadow(this)"
-                   class="link-card block w-full py-4 px-6 text-[11px] mono uppercase font-bold tracking-widest no-underline">
+                   class="link-card block py-4 px-6 text-[11px] mono uppercase font-bold tracking-widest no-underline">
                     ${link.title}
                 </a>
             `).join('');
@@ -310,7 +316,7 @@
         };
 
         window.saveData = async () => {
-            if (!auth.currentUser) return;
+            if (!auth || !auth.currentUser) return;
             const btn = document.getElementById('save-btn');
             const status = document.getElementById('status-msg');
             btn.disabled = true;
@@ -330,22 +336,21 @@
             };
 
             try {
-                await setDoc(getConfigDocRef(), finalState);
-                status.innerText = "CAMBIOS PERMANENTES EN LA NUBE";
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'settings'), finalState);
+                status.innerText = "SINCRO NUBE OK";
                 setTimeout(() => status.innerText = "", 3000);
             } catch (e) {
-                status.innerText = "ERROR EN SINCRONIZACIÓN";
-                console.error(e);
+                status.innerText = "ERROR NUBE";
             } finally {
                 btn.disabled = false;
-                btn.innerText = "GUARDAR EN LA NUBE";
+                btn.innerText = "Guardar Cambios";
             }
         };
 
         const loadCloudData = async (user) => {
-            if (!user) return;
+            if (!user || !db) return;
             try {
-                const docSnap = await getDoc(getConfigDocRef());
+                const docSnap = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config', 'settings'));
                 if (docSnap.exists()) {
                     const data = docSnap.data();
                     document.getElementById('cfg-name').value = data.name || "APEIRON.INK";
@@ -353,35 +358,33 @@
                     document.getElementById('cfg-main-link').value = data.mainLink || "https://www.instagram.com/apeiron.ink/";
                     document.getElementById('clr-bg').value = data.colors?.bg || "#050505";
                     document.getElementById('clr-text').value = data.colors?.text || "#ffffff";
-                    document.getElementById('clr-border').value = data.colors?.border || "#222222";
+                    document.getElementById('clr-border').value = data.colors?.border || "#FFD300";
                     document.getElementById('clr-accent').value = data.colors?.accent || "#ffffff";
                     appState.links = data.links || [];
                     updateUI();
                     renderEditor();
                 }
             } catch (e) {
-                console.error("Cloud sync error:", e);
+                console.warn("Nexus: No se pudo conectar con la nube.");
             } finally {
                 removeLoading();
             }
         };
 
-        const initAuth = async () => {
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
+        renderLinks();
+        renderEditor();
+        
+        if (isCanvasEnv && auth) {
+            onAuthStateChanged(auth, (user) => {
+                if (user) loadCloudData(user);
+                else {
+                    if (typeof __initial_auth_token !== 'undefined') signInWithCustomToken(auth, __initial_auth_token);
+                    else signInAnonymously(auth);
                 }
-            } catch (err) {
-                console.error("Auth init failure:", err);
-                removeLoading();
-            }
-        };
-
-        onAuthStateChanged(auth, (user) => {
-            if (user) loadCloudData(user);
-        });
+            });
+        } else {
+            setTimeout(removeLoading, 500); 
+        }
 
         window.addEventListener('keydown', (e) => {
             if (e.altKey && e.key.toLowerCase() === 'c') {
@@ -393,13 +396,7 @@
             }
         });
 
-        // Ejecución inmediata del primer renderizado
-        renderLinks();
-        renderEditor();
-        initAuth();
         lucide.createIcons();
-        setTimeout(removeLoading, 2000);
-
     </script>
 </body>
 </html>
