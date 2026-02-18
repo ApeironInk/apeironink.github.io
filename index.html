@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexo de Unión - Control Total de Contenido</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style id="dynamic-styles">
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap');
+        
+        :root {
+            --bg-color: #050505;
+            --text-color: #ffffff;
+            --border-color: #222222;
+            --accent-color: #ffffff;
+            --accent-text: #000000;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        .link-card {
+            border: 1px solid var(--border-color);
+            background-color: transparent;
+            color: var(--text-color);
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .link-card:hover {
+            background-color: var(--accent-color);
+            color: var(--accent-text);
+            border-color: var(--accent-color);
+            transform: translateY(-2px);
+        }
+
+        .grid-bg {
+            background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), 
+                              linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        input[type="color"] {
+            -webkit-appearance: none;
+            border: none;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            background: none;
+        }
+        input[type="color"]::-webkit-color-swatch {
+            border: 1px solid #444;
+            border-radius: 2px;
+        }
+
+        /* Scrollbar para el panel */
+        #config-panel::-webkit-scrollbar { width: 4px; }
+        #config-panel::-webkit-scrollbar-thumb { background: #444; }
+    </style>
+</head>
+<body class="grid-bg">
+
+    <!-- Panel de Gestión -->
+    <div id="config-panel" class="fixed left-4 top-4 z-50 bg-neutral-900 border border-neutral-700 p-4 rounded-lg w-80 shadow-2xl transition-transform -translate-x-[22rem] hover:translate-x-0 overflow-y-auto max-h-[90vh]">
+        <div class="flex justify-between items-center mb-6 border-b border-neutral-800 pb-2">
+            <h3 class="text-[10px] font-bold uppercase mono text-neutral-400 tracking-tighter">Módulo de Control V.2.0</h3>
+            <span class="text-[9px] bg-neutral-800 px-1 text-neutral-500">Alt + C</span>
+        </div>
+        
+        <div class="space-y-6">
+            <!-- Colores -->
+            <div class="space-y-2">
+                <p class="text-[9px] uppercase font-bold text-neutral-500 mb-2">Esquema Cromático</p>
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="flex items-center justify-between bg-black/40 p-1.5 rounded border border-neutral-800">
+                        <label class="text-[9px] uppercase mono">Fondo</label>
+                        <input type="color" id="clr-bg" value="#050505" oninput="updateColors()">
+                    </div>
+                    <div class="flex items-center justify-between bg-black/40 p-1.5 rounded border border-neutral-800">
+                        <label class="text-[9px] uppercase mono">Texto</label>
+                        <input type="color" id="clr-text" value="#ffffff" oninput="updateColors()">
+                    </div>
+                    <div class="flex items-center justify-between bg-black/40 p-1.5 rounded border border-neutral-800">
+                        <label class="text-[9px] uppercase mono">Borde</label>
+                        <input type="color" id="clr-border" value="#222222" oninput="updateColors()">
+                    </div>
+                    <div class="flex items-center justify-between bg-black/40 p-1.5 rounded border border-neutral-800">
+                        <label class="text-[9px] uppercase mono">Acento</label>
+                        <input type="color" id="clr-accent" value="#ffffff" oninput="updateColors()">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Identidad -->
+            <div class="space-y-3">
+                <p class="text-[9px] uppercase font-bold text-neutral-500 border-b border-neutral-800 pb-1">Identidad Visual</p>
+                <div class="space-y-2">
+                    <label class="text-[9px] uppercase mono text-neutral-500">Nombre Principal</label>
+                    <input type="text" id="cfg-name" class="w-full bg-black border border-neutral-700 text-xs p-2 rounded focus:border-white outline-none" value="NOMBRE ARTISTA" oninput="syncContent()">
+                    
+                    <label class="text-[9px] uppercase mono text-neutral-500">Identificador Secundario</label>
+                    <input type="text" id="cfg-id" class="w-full bg-black border border-neutral-700 text-xs p-2 rounded focus:border-white outline-none" value="BLACKWORK V.1.0" oninput="syncContent()">
+                    
+                    <label class="text-[9px] uppercase mono text-neutral-500">Etiqueta de Cierre</label>
+                    <textarea id="cfg-footer" class="w-full bg-black border border-neutral-700 text-xs p-2 rounded focus:border-white outline-none h-16" oninput="syncContent()">Sin degradados • Solo sólido</textarea>
+                </div>
+            </div>
+
+            <!-- Enlaces -->
+            <div class="space-y-3">
+                <div class="flex items-center justify-between border-b border-neutral-800 pb-1">
+                    <p class="text-[9px] uppercase font-bold text-neutral-500">Enlaces</p>
+                    <button onclick="addNewLink()" class="text-[9px] bg-neutral-800 hover:bg-neutral-700 px-2 py-0.5 rounded mono transition-colors">+ Añadir</button>
+                </div>
+                <div id="links-editor" class="space-y-3">
+                    <!-- Links dinámicos -->
+                </div>
+            </div>
+            
+            <button onclick="saveFeedback()" class="w-full bg-white text-black font-bold text-[10px] py-3 uppercase hover:bg-neutral-300 transition-colors mono tracking-widest">Validar Configuración</button>
+        </div>
+    </div>
+
+    <!-- Interfaz Principal -->
+    <main class="flex-grow flex items-center justify-center p-6">
+        <div class="w-full max-w-md text-center">
+            
+            <div id="avatar-box" class="w-16 h-16 bg-white mx-auto mb-6 flex items-center justify-center transition-colors">
+                <i data-lucide="binary" class="text-black w-8 h-8" id="avatar-icon"></i>
+            </div>
+
+            <h1 id="display-name" class="text-3xl font-bold tracking-tighter uppercase mb-2">NOMBRE ARTISTA</h1>
+            <p id="display-id" class="mono text-[10px] tracking-[0.3em] text-neutral-500 mb-12 uppercase border-y border-neutral-900 py-2 inline-block px-4">BLACKWORK V.1.0</p>
+
+            <div id="links-container" class="space-y-3">
+                <!-- Los enlaces se renderizan aquí -->
+            </div>
+
+            <div class="mt-12 space-y-4">
+                <p class="text-[10px] mono text-neutral-700 uppercase tracking-[0.2em] leading-relaxed">
+                    Protocolo de ejecución técnica<br>
+                    <span id="footer-tag" class="text-neutral-500 italic">Sin degradados • Solo sólido</span>
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="p-10 text-center">
+        <div class="flex justify-center gap-8 opacity-20 hover:opacity-100 transition-opacity duration-500" id="social-icons">
+            <i data-lucide="instagram" class="w-4 h-4 cursor-pointer"></i>
+            <i data-lucide="mail" class="w-4 h-4 cursor-pointer"></i>
+        </div>
+    </footer>
+
+    <script>
+        // Estado de la aplicación
+        let linkData = [
+            { title: "Instagram", url: "https://instagram.com" },
+            { title: "Reservas", url: "#" },
+            { title: "Portfolio", url: "#" }
+        ];
+
+        // Inicializar
+        function init() {
+            renderAll();
+            updateColors();
+            lucide.createIcons();
+        }
+
+        function renderAll() {
+            renderLinks();
+            renderEditor();
+        }
+
+        function renderLinks() {
+            const container = document.getElementById('links-container');
+            container.innerHTML = linkData.map(link => `
+                <a href="${link.url}" target="_blank" class="link-card block w-full py-4 px-6 text-[11px] mono uppercase font-bold tracking-widest">
+                    ${link.title}
+                </a>
+            `).join('');
+        }
+
+        function renderEditor() {
+            const editor = document.getElementById('links-editor');
+            editor.innerHTML = linkData.map((link, index) => `
+                <div class="bg-black/20 p-2 border border-neutral-800 rounded relative group">
+                    <button onclick="removeLink(${index})" class="absolute -right-1 -top-1 bg-red-900 text-white w-4 h-4 rounded-full text-[8px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">✕</button>
+                    <div class="flex flex-col gap-1">
+                        <input type="text" class="link-title-in bg-transparent border-b border-neutral-800 text-[10px] p-1 text-neutral-300 outline-none focus:border-neutral-500" value="${link.title}" oninput="collectAndSync()">
+                        <input type="text" class="link-url-in bg-transparent text-[9px] p-1 text-neutral-500 outline-none" value="${link.url}" oninput="collectAndSync()">
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function addNewLink() {
+            linkData.push({ title: "NUEVO ENLACE", url: "https://" });
+            renderAll();
+        }
+
+        function removeLink(index) {
+            linkData.splice(index, 1);
+            renderAll();
+        }
+
+        function collectAndSync() {
+            const titleInputs = document.querySelectorAll('.link-title-in');
+            const urlInputs = document.querySelectorAll('.link-url-in');
+            
+            linkData = Array.from(titleInputs).map((input, i) => ({
+                title: input.value,
+                url: urlInputs[i].value
+            }));
+            
+            syncContent();
+        }
+
+        function syncContent() {
+            document.getElementById('display-name').innerText = document.getElementById('cfg-name').value;
+            document.getElementById('display-id').innerText = document.getElementById('cfg-id').value;
+            document.getElementById('footer-tag').innerText = document.getElementById('cfg-footer').value;
+            renderLinks();
+        }
+
+        function updateColors() {
+            const root = document.documentElement;
+            const bg = document.getElementById('clr-bg').value;
+            const text = document.getElementById('clr-text').value;
+            const border = document.getElementById('clr-border').value;
+            const accent = document.getElementById('clr-accent').value;
+
+            root.style.setProperty('--bg-color', bg);
+            root.style.setProperty('--text-color', text);
+            root.style.setProperty('--border-color', border);
+            root.style.setProperty('--accent-color', accent);
+            
+            // Texto del acento (blanco o negro según brillo del fondo aproximado)
+            root.style.setProperty('--accent-text', bg);
+
+            document.getElementById('avatar-box').style.backgroundColor = text;
+            document.getElementById('avatar-icon').style.color = bg;
+        }
+
+        function saveFeedback() {
+            const btn = document.querySelector('#config-panel button');
+            btn.innerText = "SISTEMA ACTUALIZADO";
+            btn.classList.add('bg-neutral-400');
+            setTimeout(() => {
+                btn.innerText = "VALIDAR CONFIGURACIÓN";
+                btn.classList.remove('bg-neutral-400');
+            }, 1000);
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.altKey && e.key.toLowerCase() === 'c') {
+                const panel = document.getElementById('config-panel');
+                panel.classList.toggle('-translate-x-[22rem]');
+                panel.classList.toggle('translate-x-0');
+            }
+        });
+
+        init();
+    </script>
+</body>
+</html>
