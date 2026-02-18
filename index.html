@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexo de Unión - Control Total de Contenido</title>
+    <title>Nexo de Unión - Almacenamiento en la Nube</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style id="dynamic-styles">
@@ -63,214 +63,273 @@
             border-radius: 2px;
         }
 
-        /* Scrollbar para el panel */
         #config-panel::-webkit-scrollbar { width: 4px; }
         #config-panel::-webkit-scrollbar-thumb { background: #444; }
+
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: black;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            transition: opacity 0.5s ease;
+        }
     </style>
 </head>
 <body class="grid-bg">
 
+    <div id="loading" class="loading-overlay">
+        <div class="mono text-[10px] tracking-[0.5em] animate-pulse">SINCRONIZANDO...</div>
+    </div>
+
     <!-- Panel de Gestión -->
     <div id="config-panel" class="fixed left-4 top-4 z-50 bg-neutral-900 border border-neutral-700 p-4 rounded-lg w-80 shadow-2xl transition-transform -translate-x-[22rem] hover:translate-x-0 overflow-y-auto max-h-[90vh]">
         <div class="flex justify-between items-center mb-6 border-b border-neutral-800 pb-2">
-            <h3 class="text-[10px] font-bold uppercase mono text-neutral-400 tracking-tighter">Módulo de Control V.2.0</h3>
+            <h3 class="text-[10px] font-bold uppercase mono text-neutral-400 tracking-tighter">Módulo de Control Cloud V.3.0</h3>
             <span class="text-[9px] bg-neutral-800 px-1 text-neutral-500">Alt + C</span>
         </div>
         
         <div class="space-y-6">
-            <!-- Colores -->
             <div class="space-y-2">
                 <p class="text-[9px] uppercase font-bold text-neutral-500 mb-2">Esquema Cromático</p>
                 <div class="grid grid-cols-2 gap-2">
                     <div class="flex items-center justify-between bg-black/40 p-1.5 rounded border border-neutral-800">
                         <label class="text-[9px] uppercase mono">Fondo</label>
-                        <input type="color" id="clr-bg" value="#050505" oninput="updateColors()">
+                        <input type="color" id="clr-bg" value="#050505" oninput="updateUI()">
                     </div>
                     <div class="flex items-center justify-between bg-black/40 p-1.5 rounded border border-neutral-800">
                         <label class="text-[9px] uppercase mono">Texto</label>
-                        <input type="color" id="clr-text" value="#ffffff" oninput="updateColors()">
+                        <input type="color" id="clr-text" value="#ffffff" oninput="updateUI()">
                     </div>
                     <div class="flex items-center justify-between bg-black/40 p-1.5 rounded border border-neutral-800">
                         <label class="text-[9px] uppercase mono">Borde</label>
-                        <input type="color" id="clr-border" value="#222222" oninput="updateColors()">
+                        <input type="color" id="clr-border" value="#222222" oninput="updateUI()">
                     </div>
                     <div class="flex items-center justify-between bg-black/40 p-1.5 rounded border border-neutral-800">
                         <label class="text-[9px] uppercase mono">Acento</label>
-                        <input type="color" id="clr-accent" value="#ffffff" oninput="updateColors()">
+                        <input type="color" id="clr-accent" value="#ffffff" oninput="updateUI()">
                     </div>
                 </div>
             </div>
 
-            <!-- Identidad -->
             <div class="space-y-3">
                 <p class="text-[9px] uppercase font-bold text-neutral-500 border-b border-neutral-800 pb-1">Identidad Visual</p>
                 <div class="space-y-2">
-                    <label class="text-[9px] uppercase mono text-neutral-500">Nombre Principal</label>
-                    <input type="text" id="cfg-name" class="w-full bg-black border border-neutral-700 text-xs p-2 rounded focus:border-white outline-none" value="NOMBRE ARTISTA" oninput="syncContent()">
-                    
-                    <label class="text-[9px] uppercase mono text-neutral-500">Identificador Secundario</label>
-                    <input type="text" id="cfg-id" class="w-full bg-black border border-neutral-700 text-xs p-2 rounded focus:border-white outline-none" value="BLACKWORK V.1.0" oninput="syncContent()">
-                    
-                    <label class="text-[9px] uppercase mono text-neutral-500">Etiqueta de Cierre</label>
-                    <textarea id="cfg-footer" class="w-full bg-black border border-neutral-700 text-xs p-2 rounded focus:border-white outline-none h-16" oninput="syncContent()">Sin degradados • Solo sólido</textarea>
+                    <input type="text" id="cfg-name" class="w-full bg-black border border-neutral-700 text-xs p-2 rounded focus:border-white outline-none" placeholder="NOMBRE ARTISTA" oninput="updateUI()">
+                    <input type="text" id="cfg-id" class="w-full bg-black border border-neutral-700 text-xs p-2 rounded focus:border-white outline-none" placeholder="IDENTIFICADOR" oninput="updateUI()">
+                    <textarea id="cfg-footer" class="w-full bg-black border border-neutral-700 text-xs p-2 rounded focus:border-white outline-none h-16" placeholder="ETIQUETA DE CIERRE" oninput="updateUI()"></textarea>
                 </div>
             </div>
 
-            <!-- Enlaces -->
             <div class="space-y-3">
                 <div class="flex items-center justify-between border-b border-neutral-800 pb-1">
                     <p class="text-[9px] uppercase font-bold text-neutral-500">Enlaces</p>
                     <button onclick="addNewLink()" class="text-[9px] bg-neutral-800 hover:bg-neutral-700 px-2 py-0.5 rounded mono transition-colors">+ Añadir</button>
                 </div>
-                <div id="links-editor" class="space-y-3">
-                    <!-- Links dinámicos -->
-                </div>
+                <div id="links-editor" class="space-y-3"></div>
             </div>
             
-            <button onclick="saveFeedback()" class="w-full bg-white text-black font-bold text-[10px] py-3 uppercase hover:bg-neutral-300 transition-colors mono tracking-widest">Validar Configuración</button>
+            <button id="save-btn" onclick="saveData()" class="w-full bg-white text-black font-bold text-[10px] py-3 uppercase hover:bg-neutral-300 transition-colors mono tracking-widest">Guardar en la Nube</button>
+            <div id="status-msg" class="text-[8px] mono text-center uppercase text-neutral-500 h-4"></div>
         </div>
     </div>
 
     <!-- Interfaz Principal -->
     <main class="flex-grow flex items-center justify-center p-6">
         <div class="w-full max-w-md text-center">
-            
             <div id="avatar-box" class="w-16 h-16 bg-white mx-auto mb-6 flex items-center justify-center transition-colors">
                 <i data-lucide="binary" class="text-black w-8 h-8" id="avatar-icon"></i>
             </div>
-
-            <h1 id="display-name" class="text-3xl font-bold tracking-tighter uppercase mb-2">NOMBRE ARTISTA</h1>
-            <p id="display-id" class="mono text-[10px] tracking-[0.3em] text-neutral-500 mb-12 uppercase border-y border-neutral-900 py-2 inline-block px-4">BLACKWORK V.1.0</p>
-
-            <div id="links-container" class="space-y-3">
-                <!-- Los enlaces se renderizan aquí -->
-            </div>
-
+            <h1 id="display-name" class="text-3xl font-bold tracking-tighter uppercase mb-2 opacity-0 transition-opacity">NOMBRE</h1>
+            <p id="display-id" class="mono text-[10px] tracking-[0.3em] text-neutral-500 mb-12 uppercase border-y border-neutral-900 py-2 inline-block px-4 opacity-0 transition-opacity">ID</p>
+            <div id="links-container" class="space-y-3"></div>
             <div class="mt-12 space-y-4">
                 <p class="text-[10px] mono text-neutral-700 uppercase tracking-[0.2em] leading-relaxed">
                     Protocolo de ejecución técnica<br>
-                    <span id="footer-tag" class="text-neutral-500 italic">Sin degradados • Solo sólido</span>
+                    <span id="display-footer" class="text-neutral-500 italic">...</span>
                 </p>
             </div>
         </div>
     </main>
 
-    <footer class="p-10 text-center">
-        <div class="flex justify-center gap-8 opacity-20 hover:opacity-100 transition-opacity duration-500" id="social-icons">
-            <i data-lucide="instagram" class="w-4 h-4 cursor-pointer"></i>
-            <i data-lucide="mail" class="w-4 h-4 cursor-pointer"></i>
-        </div>
-    </footer>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-    <script>
-        // Estado de la aplicación
-        let linkData = [
-            { title: "Instagram", url: "https://instagram.com" },
-            { title: "Reservas", url: "#" },
-            { title: "Portfolio", url: "#" }
-        ];
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
-        // Inicializar
-        function init() {
-            renderAll();
-            updateColors();
-            lucide.createIcons();
-        }
+        let appState = {
+            name: "NOMBRE ARTISTA",
+            idTag: "BLACKWORK V.1.0",
+            footer: "Sin degradados • Solo sólido",
+            colors: { bg: "#050505", text: "#ffffff", border: "#222222", accent: "#ffffff" },
+            links: [
+                { title: "Instagram", url: "https://instagram.com" },
+                { title: "Reservas", url: "#" }
+            ]
+        };
 
-        function renderAll() {
+        // Ruta de documento corregida (debe tener un número par de segmentos)
+        const getConfigDocRef = () => doc(db, 'artifacts', appId, 'public', 'data', 'config', 'settings');
+
+        // Actualización de la UI
+        window.updateUI = () => {
+            const root = document.documentElement;
+            const colors = {
+                bg: document.getElementById('clr-bg').value,
+                text: document.getElementById('clr-text').value,
+                border: document.getElementById('clr-border').value,
+                accent: document.getElementById('clr-accent').value
+            };
+
+            root.style.setProperty('--bg-color', colors.bg);
+            root.style.setProperty('--text-color', colors.text);
+            root.style.setProperty('--border-color', colors.border);
+            root.style.setProperty('--accent-color', colors.accent);
+            root.style.setProperty('--accent-text', colors.bg);
+
+            document.getElementById('avatar-box').style.backgroundColor = colors.text;
+            document.getElementById('avatar-icon').style.color = colors.bg;
+
+            document.getElementById('display-name').innerText = document.getElementById('cfg-name').value || "NOMBRE";
+            document.getElementById('display-id').innerText = document.getElementById('cfg-id').value || "ID";
+            document.getElementById('display-footer').innerText = document.getElementById('cfg-footer').value || "...";
+
+            // Recolectar enlaces del editor
+            const titleInputs = document.querySelectorAll('.link-title-in');
+            const urlInputs = document.querySelectorAll('.link-url-in');
+            appState.links = Array.from(titleInputs).map((input, i) => ({
+                title: input.value,
+                url: urlInputs[i].value
+            }));
+
             renderLinks();
-            renderEditor();
-        }
+        };
 
-        function renderLinks() {
-            const container = document.getElementById('links-container');
-            container.innerHTML = linkData.map(link => `
+        const renderLinks = () => {
+            document.getElementById('links-container').innerHTML = appState.links.map(link => `
                 <a href="${link.url}" target="_blank" class="link-card block w-full py-4 px-6 text-[11px] mono uppercase font-bold tracking-widest">
                     ${link.title}
                 </a>
             `).join('');
-        }
+        };
 
-        function renderEditor() {
-            const editor = document.getElementById('links-editor');
-            editor.innerHTML = linkData.map((link, index) => `
+        window.renderEditor = () => {
+            document.getElementById('links-editor').innerHTML = appState.links.map((link, index) => `
                 <div class="bg-black/20 p-2 border border-neutral-800 rounded relative group">
-                    <button onclick="removeLink(${index})" class="absolute -right-1 -top-1 bg-red-900 text-white w-4 h-4 rounded-full text-[8px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">✕</button>
+                    <button onclick="removeLink(${index})" class="absolute -right-1 -top-1 bg-red-900 text-white w-4 h-4 rounded-full text-[8px] flex items-center justify-center">✕</button>
                     <div class="flex flex-col gap-1">
-                        <input type="text" class="link-title-in bg-transparent border-b border-neutral-800 text-[10px] p-1 text-neutral-300 outline-none focus:border-neutral-500" value="${link.title}" oninput="collectAndSync()">
-                        <input type="text" class="link-url-in bg-transparent text-[9px] p-1 text-neutral-500 outline-none" value="${link.url}" oninput="collectAndSync()">
+                        <input type="text" class="link-title-in bg-transparent border-b border-neutral-800 text-[10px] p-1 text-neutral-300 outline-none" value="${link.title}" oninput="updateUI()">
+                        <input type="text" class="link-url-in bg-transparent text-[9px] p-1 text-neutral-500 outline-none" value="${link.url}" oninput="updateUI()">
                     </div>
                 </div>
             `).join('');
-        }
+        };
 
-        function addNewLink() {
-            linkData.push({ title: "NUEVO ENLACE", url: "https://" });
-            renderAll();
-        }
+        window.addNewLink = () => {
+            appState.links.push({ title: "NUEVO ENLACE", url: "https://" });
+            renderEditor();
+            updateUI();
+        };
 
-        function removeLink(index) {
-            linkData.splice(index, 1);
-            renderAll();
-        }
+        window.removeLink = (index) => {
+            appState.links.splice(index, 1);
+            renderEditor();
+            updateUI();
+        };
 
-        function collectAndSync() {
-            const titleInputs = document.querySelectorAll('.link-title-in');
-            const urlInputs = document.querySelectorAll('.link-url-in');
-            
-            linkData = Array.from(titleInputs).map((input, i) => ({
-                title: input.value,
-                url: urlInputs[i].value
-            }));
-            
-            syncContent();
-        }
+        // Operaciones en la nube
+        window.saveData = async () => {
+            if (!auth.currentUser) return;
+            const btn = document.getElementById('save-btn');
+            const status = document.getElementById('status-msg');
+            btn.disabled = true;
+            btn.innerText = "SUBIENDO...";
 
-        function syncContent() {
-            document.getElementById('display-name').innerText = document.getElementById('cfg-name').value;
-            document.getElementById('display-id').innerText = document.getElementById('cfg-id').value;
-            document.getElementById('footer-tag').innerText = document.getElementById('cfg-footer').value;
-            renderLinks();
-        }
+            const finalState = {
+                name: document.getElementById('cfg-name').value,
+                idTag: document.getElementById('cfg-id').value,
+                footer: document.getElementById('cfg-footer').value,
+                colors: {
+                    bg: document.getElementById('clr-bg').value,
+                    text: document.getElementById('clr-text').value,
+                    border: document.getElementById('clr-border').value,
+                    accent: document.getElementById('clr-accent').value
+                },
+                links: appState.links
+            };
 
-        function updateColors() {
-            const root = document.documentElement;
-            const bg = document.getElementById('clr-bg').value;
-            const text = document.getElementById('clr-text').value;
-            const border = document.getElementById('clr-border').value;
-            const accent = document.getElementById('clr-accent').value;
+            try {
+                await setDoc(getConfigDocRef(), finalState);
+                status.innerText = "CAMBIOS PERMANENTES EN LA NUBE";
+                setTimeout(() => status.innerText = "", 3000);
+            } catch (e) {
+                status.innerText = "ERROR EN SINCRONIZACIÓN";
+                console.error(e);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "GUARDAR EN LA NUBE";
+            }
+        };
 
-            root.style.setProperty('--bg-color', bg);
-            root.style.setProperty('--text-color', text);
-            root.style.setProperty('--border-color', border);
-            root.style.setProperty('--accent-color', accent);
-            
-            // Texto del acento (blanco o negro según brillo del fondo aproximado)
-            root.style.setProperty('--accent-text', bg);
+        const loadCloudData = async (user) => {
+            if (!user) return;
+            try {
+                const docSnap = await getDoc(getConfigDocRef());
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    document.getElementById('cfg-name').value = data.name || "";
+                    document.getElementById('cfg-id').value = data.idTag || "";
+                    document.getElementById('cfg-footer').value = data.footer || "";
+                    document.getElementById('clr-bg').value = data.colors?.bg || "#050505";
+                    document.getElementById('clr-text').value = data.colors?.text || "#ffffff";
+                    document.getElementById('clr-border').value = data.colors?.border || "#222222";
+                    document.getElementById('clr-accent').value = data.colors?.accent || "#ffffff";
+                    appState.links = data.links || [];
+                }
+            } catch (e) {
+                console.error("Error al cargar:", e);
+            } finally {
+                updateUI();
+                renderEditor();
+                document.getElementById('loading').style.opacity = '0';
+                setTimeout(() => {
+                    if(document.getElementById('loading')) document.getElementById('loading').remove();
+                }, 500);
+                document.getElementById('display-name').classList.remove('opacity-0');
+                document.getElementById('display-id').classList.remove('opacity-0');
+            }
+        };
 
-            document.getElementById('avatar-box').style.backgroundColor = text;
-            document.getElementById('avatar-icon').style.color = bg;
-        }
+        // Inicialización de Autenticación
+        const initAuth = async () => {
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                await signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+                await signInAnonymously(auth);
+            }
+        };
 
-        function saveFeedback() {
-            const btn = document.querySelector('#config-panel button');
-            btn.innerText = "SISTEMA ACTUALIZADO";
-            btn.classList.add('bg-neutral-400');
-            setTimeout(() => {
-                btn.innerText = "VALIDAR CONFIGURACIÓN";
-                btn.classList.remove('bg-neutral-400');
-            }, 1000);
-        }
+        onAuthStateChanged(auth, (user) => {
+            if (user) loadCloudData(user);
+        });
 
         window.addEventListener('keydown', (e) => {
             if (e.altKey && e.key.toLowerCase() === 'c') {
-                const panel = document.getElementById('config-panel');
-                panel.classList.toggle('-translate-x-[22rem]');
-                panel.classList.toggle('translate-x-0');
+                document.getElementById('config-panel').classList.toggle('-translate-x-[22rem]');
+                document.getElementById('config-panel').classList.toggle('translate-x-0');
             }
         });
 
-        init();
+        initAuth();
+        lucide.createIcons();
     </script>
 </body>
 </html>
