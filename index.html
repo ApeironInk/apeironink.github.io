@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexo de Unión - Almacenamiento en la Nube</title>
+    <title>Nexus</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style id="dynamic-styles">
@@ -15,6 +15,10 @@
             --border-color: #222222;
             --accent-color: #ffffff;
             --accent-text: #000000;
+            --name-color: #F5F5F5;
+            --name-shadow: rgba(0, 233, 255, 0.35);
+            --grid-color: rgba(255, 0, 255, 0.03);
+            --interactive-shadow: #FF00FF; 
         }
 
         body {
@@ -29,24 +33,46 @@
 
         .mono { font-family: 'JetBrains Mono', monospace; }
 
+        #display-name {
+            color: var(--name-color);
+            transition: opacity 0.3s ease;
+        }
+
+        #avatar-box {
+            background-color: var(--name-color);
+            border-radius: 9999px;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+
         .link-card {
             border: 1px solid var(--border-color);
             background-color: transparent;
             color: var(--text-color);
-            transition: all 0.2s ease;
-            position: relative;
+            transition: all 0.2s ease, filter 0s;
+            cursor: pointer;
         }
 
         .link-card:hover {
             background-color: var(--accent-color);
             color: var(--accent-text);
             border-color: var(--accent-color);
-            transform: translateY(-2px);
+            transform: translateY(-3px);
+            filter: drop-shadow(3px 3px 0px var(--interactive-shadow));
+        }
+
+        .link-card:active {
+            transform: translateY(-1px);
+            filter: drop-shadow(2px 2px 0px var(--interactive-shadow));
+        }
+
+        #identity-link:hover #avatar-box {
+            transform: scale(1.05);
+            filter: drop-shadow(3px 3px 0px var(--interactive-shadow));
         }
 
         .grid-bg {
-            background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), 
-                              linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-image: linear-gradient(var(--grid-color) 1px, transparent 1px), 
+                              linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
             background-size: 40px 40px;
         }
 
@@ -75,6 +101,7 @@
             justify-content: center;
             z-index: 100;
             transition: opacity 0.5s ease;
+            pointer-events: none;
         }
     </style>
 </head>
@@ -87,13 +114,13 @@
     <!-- Panel de Gestión -->
     <div id="config-panel" class="fixed left-4 top-4 z-50 bg-neutral-900 border border-neutral-700 p-4 rounded-lg w-80 shadow-2xl transition-transform -translate-x-[22rem] hover:translate-x-0 overflow-y-auto max-h-[90vh]">
         <div class="flex justify-between items-center mb-6 border-b border-neutral-800 pb-2">
-            <h3 class="text-[10px] font-bold uppercase mono text-neutral-400 tracking-tighter">Módulo de Control Cloud V.3.0</h3>
+            <h3 class="text-[10px] font-bold uppercase mono text-neutral-400 tracking-tighter">Módulo de Control Cloud V.3.4</h3>
             <span class="text-[9px] bg-neutral-800 px-1 text-neutral-500">Alt + C</span>
         </div>
         
         <div class="space-y-6">
             <div class="space-y-2">
-                <p class="text-[9px] uppercase font-bold text-neutral-500 mb-2">Esquema Cromático</p>
+                <p class="text-[9px] uppercase font-bold text-neutral-500 mb-2">Esquema Cromático Global</p>
                 <div class="grid grid-cols-2 gap-2">
                     <div class="flex items-center justify-between bg-black/40 p-1.5 rounded border border-neutral-800">
                         <label class="text-[9px] uppercase mono">Fondo</label>
@@ -117,15 +144,16 @@
             <div class="space-y-3">
                 <p class="text-[9px] uppercase font-bold text-neutral-500 border-b border-neutral-800 pb-1">Identidad Visual</p>
                 <div class="space-y-2">
-                    <input type="text" id="cfg-name" class="w-full bg-black border border-neutral-700 text-xs p-2 rounded focus:border-white outline-none" placeholder="NOMBRE ARTISTA" oninput="updateUI()">
-                    <input type="text" id="cfg-id" class="w-full bg-black border border-neutral-700 text-xs p-2 rounded focus:border-white outline-none" placeholder="IDENTIFICADOR" oninput="updateUI()">
-                    <textarea id="cfg-footer" class="w-full bg-black border border-neutral-700 text-xs p-2 rounded focus:border-white outline-none h-16" placeholder="ETIQUETA DE CIERRE" oninput="updateUI()"></textarea>
+                    <input type="text" id="cfg-name" class="w-full bg-black border border-neutral-700 text-xs p-2 rounded focus:border-white outline-none" placeholder="APEIRON.INK" value="APEIRON.INK" oninput="updateUI()">
+                    <input type="text" id="cfg-id" class="w-full bg-black border border-neutral-700 text-xs p-2 rounded focus:border-white outline-none" placeholder="IDENTIFICADOR" value="BLACKWORK ILUSTRATIVO" oninput="updateUI()">
+                    <label class="text-[9px] uppercase mono text-neutral-500">Enlace de Cabecera</label>
+                    <input type="text" id="cfg-main-link" class="w-full bg-black border border-neutral-700 text-xs p-2 rounded focus:border-white outline-none" placeholder="https://..." value="https://www.instagram.com/apeiron.ink/" oninput="updateUI()">
                 </div>
             </div>
 
             <div class="space-y-3">
                 <div class="flex items-center justify-between border-b border-neutral-800 pb-1">
-                    <p class="text-[9px] uppercase font-bold text-neutral-500">Enlaces</p>
+                    <p class="text-[9px] uppercase font-bold text-neutral-500">Botonera de Enlaces</p>
                     <button onclick="addNewLink()" class="text-[9px] bg-neutral-800 hover:bg-neutral-700 px-2 py-0.5 rounded mono transition-colors">+ Añadir</button>
                 </div>
                 <div id="links-editor" class="space-y-3"></div>
@@ -139,20 +167,30 @@
     <!-- Interfaz Principal -->
     <main class="flex-grow flex items-center justify-center p-6">
         <div class="w-full max-w-md text-center">
-            <div id="avatar-box" class="w-16 h-16 bg-white mx-auto mb-6 flex items-center justify-center transition-colors">
-                <i data-lucide="binary" class="text-black w-8 h-8" id="avatar-icon"></i>
-            </div>
-            <h1 id="display-name" class="text-3xl font-bold tracking-tighter uppercase mb-2 opacity-0 transition-opacity">NOMBRE</h1>
-            <p id="display-id" class="mono text-[10px] tracking-[0.3em] text-neutral-500 mb-12 uppercase border-y border-neutral-900 py-2 inline-block px-4 opacity-0 transition-opacity">ID</p>
+            
+            <a id="identity-link" 
+               onmouseenter="randomizeShadow(this)" 
+               onpointerdown="randomizeShadow(this)" 
+               href="https://www.instagram.com/apeiron.ink/" 
+               target="_blank" 
+               class="block mb-12 group no-underline outline-none">
+                <div id="avatar-box" class="w-16 h-16 mx-auto mb-6 flex items-center justify-center">
+                    <i data-lucide="binary" class="text-black w-8 h-8" id="avatar-icon"></i>
+                </div>
+                <h1 id="display-name" class="text-3xl font-bold tracking-tighter uppercase mb-2">APEIRON.INK</h1>
+                <p id="display-id" class="mono text-[10px] tracking-[0.3em] text-neutral-500 uppercase border-y border-neutral-900 py-2 inline-block px-4">BLACKWORK ILUSTRATIVO</p>
+            </a>
+
             <div id="links-container" class="space-y-3"></div>
-            <div class="mt-12 space-y-4">
-                <p class="text-[10px] mono text-neutral-700 uppercase tracking-[0.2em] leading-relaxed">
-                    Protocolo de ejecución técnica<br>
-                    <span id="display-footer" class="text-neutral-500 italic">...</span>
-                </p>
-            </div>
+
         </div>
     </main>
+
+    <footer class="p-12 text-center">
+        <p class="mono text-[10px] text-neutral-600 uppercase tracking-[0.3em]">
+            citas por instagram o whatsapp
+        </p>
+    </footer>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -166,63 +204,89 @@
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
         let appState = {
-            name: "NOMBRE ARTISTA",
-            idTag: "BLACKWORK V.1.0",
-            footer: "Sin degradados • Solo sólido",
+            name: "APEIRON.INK",
+            idTag: "BLACKWORK ILUSTRATIVO",
+            mainLink: "https://www.instagram.com/apeiron.ink/",
             colors: { bg: "#050505", text: "#ffffff", border: "#222222", accent: "#ffffff" },
             links: [
-                { title: "Instagram", url: "https://instagram.com" },
-                { title: "Reservas", url: "#" }
+                { title: "Instagram (portfolio)", url: "https://www.instagram.com/apeiron.ink/" },
+                { title: "Whatsapp", url: "https://wa.me/message/4SLJ2CDOJ5RND1" },
+                { title: "TikTok", url: "https://www.tiktok.com/@apeiron.ink?_r=1&_t=ZN-9420kon7vs6" }
             ]
         };
 
-        // Ruta de documento corregida (debe tener un número par de segmentos)
         const getConfigDocRef = () => doc(db, 'artifacts', appId, 'public', 'data', 'config', 'settings');
 
-        // Actualización de la UI
+        const removeLoading = () => {
+            const loader = document.getElementById('loading');
+            if (loader) {
+                loader.style.opacity = '0';
+                setTimeout(() => loader.remove(), 500);
+            }
+        };
+
+        // Función global para aleatorizar el color de la sombra
+        // Añadido #FFD300 al espectro de aleatoriedad
+        window.randomizeShadow = (el) => {
+            const colors = ['#00E9FF', '#FF00FF', '#FFD300'];
+            const chosen = colors[Math.floor(Math.random() * colors.length)];
+            el.style.setProperty('--interactive-shadow', chosen);
+        };
+
         window.updateUI = () => {
             const root = document.documentElement;
-            const colors = {
-                bg: document.getElementById('clr-bg').value,
-                text: document.getElementById('clr-text').value,
-                border: document.getElementById('clr-border').value,
-                accent: document.getElementById('clr-accent').value
-            };
+            const bgVal = document.getElementById('clr-bg').value;
+            const textVal = document.getElementById('clr-text').value;
+            const borderVal = document.getElementById('clr-border').value;
+            const accentVal = document.getElementById('clr-accent').value;
 
-            root.style.setProperty('--bg-color', colors.bg);
-            root.style.setProperty('--text-color', colors.text);
-            root.style.setProperty('--border-color', colors.border);
-            root.style.setProperty('--accent-color', colors.accent);
-            root.style.setProperty('--accent-text', colors.bg);
+            root.style.setProperty('--bg-color', bgVal);
+            root.style.setProperty('--text-color', textVal);
+            root.style.setProperty('--border-color', borderVal);
+            root.style.setProperty('--accent-color', accentVal);
+            root.style.setProperty('--accent-text', bgVal);
 
-            document.getElementById('avatar-box').style.backgroundColor = colors.text;
-            document.getElementById('avatar-icon').style.color = colors.bg;
+            const avatarIcon = document.getElementById('avatar-icon');
+            if(avatarIcon) avatarIcon.style.color = '#000000';
 
-            document.getElementById('display-name').innerText = document.getElementById('cfg-name').value || "NOMBRE";
-            document.getElementById('display-id').innerText = document.getElementById('cfg-id').value || "ID";
-            document.getElementById('display-footer').innerText = document.getElementById('cfg-footer').value || "...";
+            const name = document.getElementById('cfg-name').value || "APEIRON.INK";
+            const idTag = document.getElementById('cfg-id').value || "ID";
+            const mainLink = document.getElementById('cfg-main-link').value || "#";
 
-            // Recolectar enlaces del editor
+            document.getElementById('display-name').innerText = name;
+            document.getElementById('display-id').innerText = idTag;
+            document.getElementById('identity-link').href = mainLink;
+
             const titleInputs = document.querySelectorAll('.link-title-in');
             const urlInputs = document.querySelectorAll('.link-url-in');
-            appState.links = Array.from(titleInputs).map((input, i) => ({
-                title: input.value,
-                url: urlInputs[i].value
-            }));
+            if (titleInputs.length > 0) {
+                appState.links = Array.from(titleInputs).map((input, i) => ({
+                    title: input.value,
+                    url: urlInputs[i].value
+                }));
+            }
 
             renderLinks();
         };
 
         const renderLinks = () => {
-            document.getElementById('links-container').innerHTML = appState.links.map(link => `
-                <a href="${link.url}" target="_blank" class="link-card block w-full py-4 px-6 text-[11px] mono uppercase font-bold tracking-widest">
+            const container = document.getElementById('links-container');
+            if(!container) return;
+            container.innerHTML = appState.links.map(link => `
+                <a href="${link.url}" 
+                   target="_blank" 
+                   onmouseenter="randomizeShadow(this)"
+                   onpointerdown="randomizeShadow(this)"
+                   class="link-card block w-full py-4 px-6 text-[11px] mono uppercase font-bold tracking-widest no-underline">
                     ${link.title}
                 </a>
             `).join('');
         };
 
         window.renderEditor = () => {
-            document.getElementById('links-editor').innerHTML = appState.links.map((link, index) => `
+            const editor = document.getElementById('links-editor');
+            if(!editor) return;
+            editor.innerHTML = appState.links.map((link, index) => `
                 <div class="bg-black/20 p-2 border border-neutral-800 rounded relative group">
                     <button onclick="removeLink(${index})" class="absolute -right-1 -top-1 bg-red-900 text-white w-4 h-4 rounded-full text-[8px] flex items-center justify-center">✕</button>
                     <div class="flex flex-col gap-1">
@@ -245,7 +309,6 @@
             updateUI();
         };
 
-        // Operaciones en la nube
         window.saveData = async () => {
             if (!auth.currentUser) return;
             const btn = document.getElementById('save-btn');
@@ -256,7 +319,7 @@
             const finalState = {
                 name: document.getElementById('cfg-name').value,
                 idTag: document.getElementById('cfg-id').value,
-                footer: document.getElementById('cfg-footer').value,
+                mainLink: document.getElementById('cfg-main-link').value,
                 colors: {
                     bg: document.getElementById('clr-bg').value,
                     text: document.getElementById('clr-text').value,
@@ -285,35 +348,34 @@
                 const docSnap = await getDoc(getConfigDocRef());
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    document.getElementById('cfg-name').value = data.name || "";
-                    document.getElementById('cfg-id').value = data.idTag || "";
-                    document.getElementById('cfg-footer').value = data.footer || "";
+                    document.getElementById('cfg-name').value = data.name || "APEIRON.INK";
+                    document.getElementById('cfg-id').value = data.idTag || "BLACKWORK ILUSTRATIVO";
+                    document.getElementById('cfg-main-link').value = data.mainLink || "https://www.instagram.com/apeiron.ink/";
                     document.getElementById('clr-bg').value = data.colors?.bg || "#050505";
                     document.getElementById('clr-text').value = data.colors?.text || "#ffffff";
                     document.getElementById('clr-border').value = data.colors?.border || "#222222";
                     document.getElementById('clr-accent').value = data.colors?.accent || "#ffffff";
                     appState.links = data.links || [];
+                    updateUI();
+                    renderEditor();
                 }
             } catch (e) {
-                console.error("Error al cargar:", e);
+                console.error("Cloud sync error:", e);
             } finally {
-                updateUI();
-                renderEditor();
-                document.getElementById('loading').style.opacity = '0';
-                setTimeout(() => {
-                    if(document.getElementById('loading')) document.getElementById('loading').remove();
-                }, 500);
-                document.getElementById('display-name').classList.remove('opacity-0');
-                document.getElementById('display-id').classList.remove('opacity-0');
+                removeLoading();
             }
         };
 
-        // Inicialización de Autenticación
         const initAuth = async () => {
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                await signInWithCustomToken(auth, __initial_auth_token);
-            } else {
-                await signInAnonymously(auth);
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (err) {
+                console.error("Auth init failure:", err);
+                removeLoading();
             }
         };
 
@@ -323,13 +385,21 @@
 
         window.addEventListener('keydown', (e) => {
             if (e.altKey && e.key.toLowerCase() === 'c') {
-                document.getElementById('config-panel').classList.toggle('-translate-x-[22rem]');
-                document.getElementById('config-panel').classList.toggle('translate-x-0');
+                const panel = document.getElementById('config-panel');
+                if(panel){
+                    panel.classList.toggle('-translate-x-[22rem]');
+                    panel.classList.toggle('translate-x-0');
+                }
             }
         });
 
+        // Ejecución inmediata del primer renderizado
+        renderLinks();
+        renderEditor();
         initAuth();
         lucide.createIcons();
+        setTimeout(removeLoading, 2000);
+
     </script>
 </body>
 </html>
